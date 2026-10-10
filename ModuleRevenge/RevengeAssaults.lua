@@ -275,6 +275,230 @@ local ASSAULTS = {
         BossWave  = { "Advanced Big Bot" },
         BossWaveTime = 40,
     },
+
+
+    -- ===================================================================
+    -- ДАЛЬШЕ HYDRO - ростер мести от Plant до конца игры.
+    --   * Триггеры - сырые флаги мира, те же, что считает StoryManager
+    --   * StoryMax снимает месть, если игрок ушёл далеко вперёд
+    --   * Варианты подобраны по этапу: каждый уже стоит в мире к этому флагу
+    -- ===================================================================
+
+    -- ===================================================================
+    -- PLANT - грибница уничтожена, просветлённые и Экзоры приходят за этим
+    -- ===================================================================
+    {
+        Id      = "Revenge_Plant",
+        Name    = "monkdad - PLANT",
+        Row     = "assault_monkdad",
+        Trigger  = { Flag = "Plant_FungusDestroyed" },     -- StoryProgress 62
+        Delay    = 1,
+        StoryMax = 72,   -- уходит, когда идёт Reactors
+
+        WarningMessage = "Spores drift in from the Plant...",
+        StartMessage   = "The fungus remembers.",
+
+        Wave1     = { "Enlightened Pest", "Pest_Enlightened", "Enlightened Pest", "Peccary_Mushroom" },
+        Wave1Time = 3,
+        Wave2     = { "Exor Spiritwalker", "Exorrior Magus" },
+        Wave2Time = 10,
+        Wave3     = { "Hive Sow", "Phase Peccary", "Enlightened Pest", "Exor Shadow Monk" },
+        Wave3Time = 4,
+        BossWave  = { "Exor Shadow Monk", "Exorrior Magus", "Exor Dislocator" },
+        BossWaveTime = 8,
+
+        OnStart = RE.Sequence(
+            RE.Weather("Spores", 240000, 5000),
+            RE.Drop(20000, { units = { "Enlightened Pest", "Enlightened Pest", "Magma Peccary" },
+                             spawnInterval = 3000 })
+        ),
+    },
+
+
+    -- ===================================================================
+    -- OVERGROWTH - станция Overgrowth в Reactors: volatile-нашествие
+    -- ===================================================================
+    {
+        Id      = "Revenge_Overgrowth",
+        Name    = "monkdad - OVERGROWTH",
+        Row     = "assault_monkdad",
+        Trigger  = { Flag = "Reactors_S3Overgrowth_Complete" },   -- StoryProgress 73
+        Delay    = 1,
+        StoryMax = 82,
+
+        WarningMessage = "Something rots beneath the floor...",
+        StartMessage   = "The overgrowth spills out!",
+
+        Wave1     = { "Antevolatile Pest", "Pest_Volatile", "Volatile Pest", "Antevolatile Pest" },
+        Wave1Time = 2,
+        Wave2     = { "Volatile Peccary", "Acidic Exor" },
+        Wave2Time = 10,
+        Wave3     = { "Exor Hunter", "Antesignal Pest", "Volatile Peccary", "Pest_Volatile" },
+        Wave3Time = 3,
+        BossWave  = { "Pestilence", "Acidic Exor", "Exor Hunter" },
+        BossWaveTime = 10,
+
+        OnStart = RE.Sequence(
+            RE.Weather("RadLeak", 200000, 5000),
+            RE.PestDrop(15000, { spawns = { volatiles = 4 }, spawnInterval = 2500 })
+        ),
+    },
+
+
+    -- ===================================================================
+    -- WAR - станция War в Reactors: Орден мстит за разгромленный пост
+    -- ===================================================================
+    {
+        Id      = "Revenge_War",
+        Name    = "monkdad - WAR",
+        Row     = "assault_monkdad",
+        Trigger  = { Flag = "Reactors_S2War_Complete" },   -- StoryProgress 74
+        Delay    = 2,    -- и зазор за Overgrowth, чтобы две мести не шли подряд
+        StoryMax = 84,
+
+        WarningMessage = "Radio chatter, too close...",
+        StartMessage   = "The Order wants its outpost back!",
+
+        Wave1     = { "Centurion Grunt", "Suppressor Grunt", "Grenadier Guard", "Dioscoridian" },
+        Wave1Time = 3,
+        Wave2     = { "Tracer Sniper", "Signifer" },
+        Wave2Time = 10,
+        Wave3     = { "Rocket Rat", "Mad Rat", "Skirmisher", "Sweeper" },
+        Wave3Time = 3,
+        BossWave  = { "Super Sapper", "Signifer", "Centurion Grunt" },
+        BossWaveTime = 8,
+
+        OnStart = RE.Sequence(
+            RE.Weather("Blackout", 90000, 30000),
+            RE.OrderDrop(10000, { spawns = { troopers = 2, captains = 1 },
+                                  spawnInterval = 1000, spawnRadius = 2000, minSpawnRadius = 1000 })
+        ),
+    },
+
+
+    -- ===================================================================
+    -- INQUISITION - солнечный диск в Praetorium тронут
+    -- ===================================================================
+    {
+        Id      = "Revenge_Inquisition",
+        Name    = "monkdad - INQUISITION",
+        Row     = "assault_monkdad",
+        Trigger  = { Flag = "V_INQ_SunDiskTouched" },   -- StoryProgress 82
+        Delay    = 1,
+        StoryMax = 92,
+
+        WarningMessage = "Hymns echo down the corridor...",
+        StartMessage   = "The Inquisition has found you.",
+
+        Wave1     = { "Speculatores", "Shield Embolon", "Speculatores" },
+        Wave1Time = 3,
+        Wave2     = { "Purifier", "Praetorium Sniper" },
+        Wave2Time = 10,
+        Wave3     = { "Salii", "Shield Embolon", "Speculatores", "Purifier" },
+        Wave3Time = 4,
+        BossWave  = { "Salii", "Salii", "Signifer" },
+        BossWaveTime = 10,
+
+        OnStart = RE.Sequence(
+            RE.Weather("Fog", 180000, 5000),
+            RE.OrderDrop(30000, { spawns = { flameRats = 2, rooks = 1 },
+                                  spawnInterval = 1500, spawnRadius = 2000, minSpawnRadius = 1000 })
+        ),
+    },
+
+
+    -- ===================================================================
+    -- ICE WALL - ледяная стена Residence снята, холод идёт следом
+    -- ===================================================================
+    {
+        Id      = "Revenge_IceWall",
+        Name    = "monkdad - ICE WALL",
+        Row     = "assault_monkdad",
+        Trigger  = { Flag = "Residence_IceWallRemoved" },   -- StoryProgress 93
+        Delay    = 1,
+        StoryMax = 102,
+
+        WarningMessage = "Frost creeps up the windows...",
+        StartMessage   = "The wall is down. The cold is in.",
+
+        Wave1     = { "Flurry Pest", "Pest_Snow", "Flurry Pest", "Whiteout Peccary" },
+        Wave1Time = 3,
+        Wave2     = { "Winterfector", "Winter Exor" },
+        Wave2Time = 10,
+        Wave3     = { "Storm Witch", "Whiteout Peccary", "Groupe Frostpack", "Winter Exor" },
+        Wave3Time = 3,
+        BossWave  = { "Winterfector", "Gatekeeper Warchief", "Storm Witch" },
+        BossWaveTime = 10,
+
+        -- Белая мгла на верстаке трижды, третья - длинная
+        OnStart = RE.Sequence(
+            RE.Weather("ColdSnap", 200000, 5000),
+            RE.SpecialWeather("Whiteout", 10000, 30000),
+            RE.SpecialWeather("Whiteout", 10000, 60000),
+            RE.SpecialWeather("Whiteout", 30000, 90000)
+        ),
+    },
+
+
+    -- ===================================================================
+    -- FRACTURE - разлом закрыт, Привратники Fallow приходят за долгом
+    -- ===================================================================
+    {
+        Id      = "Revenge_Fracture",
+        Name    = "monkdad - FRACTURE",
+        Row     = "assault_monkdad",
+        Trigger  = { Flag = "Residence_Fracture_Complete" },   -- StoryProgress 97
+        Delay    = 1,
+        StoryMax = 105,
+
+        WarningMessage = "The bones are cast.",
+        StartMessage   = "The Gatekeepers answer the Fracture!",
+
+        Wave1     = { "Neophyte Tamer", "Gatekeeper_Phyter", "Warrior Witch", "Neophyte Trainer" },
+        Wave1Time = 3,
+        Wave2     = { "Esoteric Chieftain", "Barrier Mage" },
+        Wave2Time = 12,
+        Wave3     = { "Plague Witch", "Jotun Rocketeer", "Abjurer Mage", "Gatekeeper_Phyter" },
+        Wave3Time = 4,
+        BossWave  = { "Gatekeeper Warchief", "Esoteric Chieftain", "Storm Witch" },
+        BossWaveTime = 10,
+
+        OnStart = RE.Sequence(
+            RE.Weather("BlackFog", 30000, 5000),
+            RE.Weather("BlackFog", 30000, 120000)
+        ),
+    },
+
+
+    -- ===================================================================
+    -- END - босс повержен; двор Fallow приходит на базу
+    -- ===================================================================
+    {
+        Id      = "Revenge_End",
+        Name    = "monkdad - END",
+        Row     = "assault_monkdad",
+        Trigger  = { Flag = "EndBossDefeated" },   -- StoryProgress 101
+
+        Delay    = 2,
+
+        WarningMessage = "The silence after is wrong...",
+        StartMessage   = "They come for what you took.",
+
+        Wave1     = { "DarkLens Phyter", "Warrior Witch", "DarkLens Phyter", "Storm Witch" },
+        Wave1Time = 3,
+        Wave2     = { "Jotun of the Fallow" },
+        Wave2Time = 15,
+        Wave3     = { "Plague Witch", "Gatekeeper Warchief", "Barrier Mage", "Neophyte Tamer" },
+        Wave3Time = 4,
+        BossWave  = { "Fallow Patriarch", "Mother of the Fallow" },
+        BossWaveTime = 15,
+
+        OnStart = RE.Sequence(
+            RE.Weather("BlackFog", 40000, 5000),
+            RE.Weather("RadLeak", 60000, 100000),
+            RE.Weather("BlackFog", 40000, 180000)
+        ),
+    },
 }
 
 return ASSAULTS

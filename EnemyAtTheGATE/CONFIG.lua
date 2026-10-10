@@ -18,7 +18,7 @@ return {
     --     * The NPC will remain a base NPC if it fails for some reason
     --
     -- ===================================================================
-    DIFFICULTY        = "Hard",
+    DIFFICULTY        = "HardCustom",
 
     -- ===================================================================
     -- Number of Assaults per week
@@ -32,6 +32,46 @@ return {
     -- ===================================================================
     ASSAULTS_PER_WEEK = 7,
     
+
+    -- ===================================================================
+    -- ANTEUP VARIETY - нужен AnteUp с MOD_COMPATIBILITY.ENEMY_AT_THE_GATE = true
+    --   * Без AnteUp примешивание и модификаторы Crossfire/Elite молча
+    --       выключаются, остаётся только Weather
+    --   * Код: scripts/Managers/Variety.lua, данные: ANTEUP_VARIANTS.lua
+    -- ===================================================================
+
+    -- Примешивание: каждый обычный слот волны с шансом становится вариантом
+    -- AnteUp той же базы, разрешённым на текущем этапе
+    VARIANT_INFUSION = {
+        Enabled    = true,
+        Chance     = 0.25,   -- шанс на слот до LateStory
+        LateChance = 0.40,   -- шанс на слот с LateStory
+        LateStory  = 70,     -- 70 = Reactors
+    },
+
+    -- Модификаторы: с шансом Chance к штурму добавляется ОДИН из
+    --   Weather   - погода на 2-3 минуты (только записям без своего OnStart)
+    --   Crossfire - отряд враждебной фракции на точке волны, сначала бьёт штурмующих
+    --   Elite     - в каждую волну встаёт один усиленный враг
+    -- Weights - относительные веса; 0 выключает модификатор
+    MUTATORS = {
+        Enabled  = true,
+        Chance   = 0.25,
+        Announce = true,     -- писать в чат, какой модификатор выпал
+        Weights  = { Weather = 1, Crossfire = 1, Elite = 1 },
+    },
+
+    -- Пул боссов: записи ASSAULTS_CUSTOM с Pool = "boss"
+    -- С этапа StoryMin каждый штурм с шансом Chance берётся из пула боссов
+    --   * 102 = после финала игры (End_MainStoryComplete)
+    --   * Это замена обычного штурма, лишних штурмов не добавляется
+    BOSS_ASSAULTS = {
+        Enabled  = true,
+        Chance   = 0.15,
+        StoryMin = 102,
+        Announce = false,    -- true = писать в чат "Boss assault incoming"
+    },
+
 
     -- ===================================================================
     -- Silence the Facility Announcer's vocal assault alerts.

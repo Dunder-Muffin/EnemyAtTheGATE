@@ -349,6 +349,7 @@ function MAIN.StopMod()
     STATE.StoryProgress       = 0
     STATE.DisableScarecrows   = false
     STATE.LastAssaultDay      = -1
+    STATE.BossRoll            = nil
     QM.Reset()
 
     -- Drop the asset pins with the world. The hard refs belonged to a GameState that
