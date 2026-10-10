@@ -1,0 +1,283 @@
+
+-- ===================================================================================
+-- DT_ASSAULTS - This is the base game's assaults 
+-- 
+-- * Identified by name and what they spawn
+-- * Any assault needs to be grouped under one of these 
+-- * Some have a 'WorldFlag' - that means they only start after that point in the game.
+-- 
+-- Format: npcs (cycle order) | boss | start message | rates W1/W2/W3/Boss | requires flag
+-- ===================================================================================
+-- 
+-- assault_peststorm:           Pestx7 | boss: none | "A portal storm has started!" | 6/4/3/10 | (none)
+-- assault_peccaryboss:         Pestx5 | boss: Peccary | "A portal storm has started!" | 2/2/2/10 | (none)
+-- assault_monkdad:             Exor_Monk, Peccary, Peccary | boss: none | "Something fowl lurks nearby…" | 2/2/2/10 | Office_Silo3Opened
+-- assault_soldierpatrol:       Grunt_Captain, Grunt_Medic, Grunt_Guard | boss: none | "A radio crackle is heard nearby…" | 2/2/2/10 | MF_MetBlacksmith
+-- assault_pistolbros:          Grunt_Guardx2 | boss: none | "A radio crackle is heard nearby…" | 2/2/2/10 | MF_MetBlacksmith
+-- assault_smggrunt:            Grunt | boss: none | "A radio crackle is heard nearby…" | 2/2/2/10 | MF_MetBlacksmith
+-- assault_larva:               Larvax3, Larva_Hivex4, Larva_Bigx2 | boss: Larva_Big_Hive | "The hive is angry!" | 6/4/2/6 | MFMines_Mgt_Explored
+-- assault_soloassassin:        Assassin | boss: none | (no message) | 8/6/4/10 | MF_MetSoldier
+-- assault_ratpatrol:           Grunt_LabRat | boss: none | (no message) | 5/5/5/10 | MF_MetSoldier
+-- assault_peststorm_electro:   Pest_Electrox4 | boss: Sow | "A portal storm has started!" | 8/6/4/10 | LABS_ExploredLabs
+-- assault_pestfrenzy_electro:  Pest_Electrox6 | boss: Sow | "A frenzy!" | 4/4/4/10 | LABS_ExploredLabs
+-- assault_zombiehorde:         Zombiex10 | boss: none | (no message) | 2/2/2/10 | LABS_ActivateWarehouseLift
+-- assault_zombiewave:          Zombiex10 | boss: none | (no message) | 2/2/2/10 | LABS_ActivateWarehouseLift
+-- assault_shotgunsquad:        Grunt_Captain, Grunt_Medic, Grunt_Shotgun | boss: none | "A radio crackle is heard nearby…" | 5/5/5/10 | LABS_ReachedCommandCenter
+-- assault_salemmob:            Pillager_Farmerx2, Pillager_Musketeerx2, Pillager_Torchbearerx2 | boss: Pillager_Woodsman | "Torches and pitchforks!" | 3/3/3/10 | Salem_Complete
+-- assault_exorsquad:           Exor_Monk, Exor_Armored, Exor_Monk | boss: none | "Something fowl lurks nearby…" | 5/4/3/10 | Dams_ReachedCentral
+-- assault_groupe:              Groupe_Grunt, Groupe_Rook, Groupe_Shotgun | boss: none | "A cold wind blows through…" | 2/2/2/10 | DAMS_CompletedVoussoir
+-- assault_mages:               Gatekeeper_Phyterx2 | boss: Gatekeeper_Mage | "Something arcane tingles your senses…" | 5/5/4/10 | Reactors_S1Labs_Complete
+-- assault_gkheavy:             Gatekeeper_Chieftain, Gatekeeper_Heavy, Gatekeeper_Mage | boss: none | "The bones are cast." | 5/5/4/10 | Reactors_S2War_Complete
+-- assault_lamogifrenzy:        WinterSpritex3 | boss: WinterSprite_Bomb | "The bytes are all wrong." | 8/6/4/10 | VWinter_Complete
+-- assault_peststorm_volatile:  Pest_Volatilex4 | boss: Exor_Volatile | "A portal storm has started!" | 8/6/4/10 | Reactors_S3Overgrowth_Complete
+-- assault_corruptbot:          (no wave npcs) | boss: Robot_Corrupt | "An abnormal presence…" | 5/5/5/10 | Reactors_S3Overgrowth_Complete
+-- assault_pestfrenzy_volatile: Pest_Volatilex7 | boss: Exor_Volatile | "A frenzy!" | 4/4/4/10 | Reactors_S3Overgrowth_Complete
+-- assault_gksquad:             Gatekeeper_Chieftain, Gatekeeper_Phyter, Gatekeeper_Witch | boss: none | "The bones are cast." | 5/5/4/10 | Reactors_SG_InteriorContact
+-- assault_witchhunt:           Gatekeeper_Witchx3 | boss: none | "A hex upon your house." | 2/2/2/10 | Reactors_SG_InteriorContact
+
+
+
+
+-- ===================================================================================
+-- EM (EVENT MANAGER) FUNCTIONS  (Managers/EventManager.lua)
+-- 
+-- * Skim the assault file to see how these are used 
+-- * Add additional functionality to an assault
+--   > Set Weather
+--   > Spawn enemies outside of the normal 'waves', in set locations
+--   > Spawn large enemies *If spawned normally, they struggle to pathfind
+-- 
+-- * Each of these is a factory taht runs after a delay (ms)
+-- * Use EM.Sequence() to run a bunch of these
+--
+-- ===================================================================================
+-- EM.Sequence(fn, fn, ...) - run several of the below after OnStart
+--
+-- [WEATHER]
+-- EM.AssaultWeather(weather, duration, delay) - 
+--   * Fog, RadLeak, Spores, Blackout, BlackFog, ColdSnap
+--   * Note: delay starts during prep phase (prep=20s before assault)
+--       so you can have Fog roll in before assault phase                   
+-- 
+--
+-- [SPAWNS] IN GENERAL, DROPS ARE KEPT 15-30m from the Bench]
+--
+-- EM.PestDrop(delay, opts) - A2 enemies. 
+--   options { ... }
+--     delay                ms this runs after the assault starts (30000 = 30sec)
+--     opts.spawns          { pests, electros, volatiles, winters, carbonateds, rats, leyaks, magmas, enlighteneds }
+--     opts.spawnInterval   ms delay between each NPC spawned. Min 200ms
+-- 
+--     opts.spawnRadius     min/max distance an NPC spawns from the bench. 
+--     opts.minSpawnRadius  Best effort, may spawn closer if it fails to find a spot 
+--     
+--     opts.dilationStart   This slows an NPC's speed for X ms when it spawns
+--     opts.dilationDelay   Main use: Order repel in on spawn. 
+--                          Make a bunch of them slowly repel as a cool-factor + extra warning 
+-- 
+-- EM.PeccaryDrop(delay, opts) - spawns: { peccaries, sows, mushrooms, alphas, winters, electros, armoreds, volatiles }
+-- EM.ExorDrop(delay, opts)    - spawns: { monks, exors, armoreds, pikemen, volatiles }
+-- EM.SkinkDrop(delay, opts)   - spawns: { skinks, magmaSkinks }
+--                               faction=x. (5 makes them friends with A2 entities)
+-- 
+-- EM.OrderDrop(delay, opts)   - spawns: { guards, grunts, medics, captains, breachers, snipers*, interfectors* } *don't have a spawn animation (repelling)
+-- EM.GroupeDrop(delay, opts)  - spawns: { grunts*, rooks*, breachers* }
+-- EM.RatDrop(delay, opts)     - spawns: { labRats, sappers, garageRat, flameRat }
+-- 
+-- EM.GatekeeperDrop(delay, opts)   - spawns: { phyters, mages, heavies, chieftains, witches, corruptBots }
+--                                    NOTE: these spawn out of a single portal
+--                                    fxDelay (portal open -> first NPC), firstSpawnInterval, emergeSound
+--
+--   THE PORTAL DROPS (GatekeeperDrop / RatDrop / ReaperPortalDrop) all aim
+--   themselves at the target bench:
+--     * the doorway faces the base (the FX is a flat plane - edge-on it is invisible)
+--     * every NPC steps out pointing the same way
+--     * the doorway DRIFTS forward along that facing over its lifetime, so it
+--         reads as a gate advancing on the base and pushing bodies out of itself
+--
+--     opts.drift    uu the doorway travels. Omit for the default (100 for the GK
+--                   and Nightrealm doors), 0 to pin it still, higher = faster slide
+--
+-- EM.SymphonistDrop(delay, opts)   - spawns: { symphonists } *Needs fog up
+-- EM.CrystalliskDrop(delay, opts)  - spawns: { crystallisks }
+-- EM.ReaperDrop(delay, opts)       - spawns: { reapers }
+-- EM.GiantDrop(delay, opts)        - spawns: { tarasques, behemoths, yetis, bigfoots, bigogi, snowmen }
+-- EM.LamogiDrop(delay, opts)       - spawns: { lamogis, bombs, bosses }
+--
+--   
+-- EM.ReaperPortalDrop(delay, opts) - spawns: { reapers } - adds a Nightrealm portal flavor
+-- EM.SpawnDarkLensMage(delay, opts)- spawns: { mages } - removes invuln
+-- EM.PowerLeechBossDrop(delay, opts) - spawns: { powerLeeches }
+--
+-- EM.DirectDrop(delay, opts)  - A general purpose function to drop any unit,
+--                               near the bench (5-10m). Don't use for giants
+--
+--
+-- ===========================================================================================
+-- [CROSSFIRE] - make two enemy factions fight each other, not just the base
+-- ===========================================================================================
+--
+-- These work on EVERY EM.*Drop. Leave them out and nothing changes.
+--
+--   favoredEnemy      Faction name or number. Each NPC in the drop looks for an NPC
+--                     of that faction near the bench and opens on a random one.
+--                       > "Order", "Exor", "Robot", "Zombie", "Canaan", "Crystallisk"
+--                       > (Pests and Exor share the "Exor" team)
+--                       > No candidate nearby = it just runs the assault normally
+--
+--   favoredRadius     How far to look. Default 2500 (25m)
+--
+--   spawnAtWavePoint  Spawn at the DIRECTOR's own wave spawn point instead of around
+--                     the bench. This is what actually creates a crossfire - otherwise
+--                     both sides just converge on the bench from opposite angles
+--                       > The whole drop lands on ONE point, together
+--                       > It uses whichever wave is running when the drop fires
+--                       > The game re-picks its spawn points each wave, and scatters
+--                           each wave's NPCs randomly across them - so expect to land
+--                           near SOME of that wave, not all of it
+--
+--   wavePointScatter  Spread around that point. Default 400 (4m)
+--
+-- * THE LOCK IS A ONE-SHOT. It lapses the moment that NPC lands its first hit, so it
+--     trades a few blows and then goes back to the base. It does not babysit a grudge.
+--
+-- Example - Order waves, then Exor teleport in on top of them 10s later:
+--
+--   Wave1     = { "Grunt", "Grunt", "Grunt_Guard" },
+--   Wave1Time = 2,
+--   OnStart   = EM.ExorDrop(10000, {
+--       spawns = { monks = 3, exors = 1 },
+--       spawnAtWavePoint = true,
+--       favoredEnemy     = "Order",
+--   })
+--
+
+
+
+-- ===================================================================================
+-- DT_NPCList - Define the NPC to spawn
+-- * Most NPCs can be passed in the assault waves. Some exceptions
+--     > Large creatures: Reminder use EM.GiantDrop() to spawn these 
+--     > Leyak / Krause: These did not spawn for me
+--     > DarkLens_Mage: Invulnerable if spawned outside of a function.
+--          +Killing DarkLens will SET WORLDFLAGS you don't want to set early
+--     > Symphonist: Despawn without fog
+--     > Boss_Shadow: Have fun
+-- 
+-- ===================================================================================
+AnteverseBird
+Assassin
+Behemoth
+Bigfoot
+BogMan
+Boss_Shadow
+Boss_Tentacle
+Boxy
+Carbuncle
+Carbuncle_Mushroom
+Carbuncle_Tainted
+Clericus
+Composer
+Coworker
+DarkLens_Chieftain
+DarkLens_Heavy
+DarkLens_Mage
+DarkLens_Phyter
+DarkLens_Witch
+Exor
+Exor_Armored
+Exor_Monk
+Exor_Pikeman
+Exor_Pikeman_Ally
+Exor_Volatile
+Gatekeeper_Chieftain
+Gatekeeper_Heavy
+Gatekeeper_Heavy_BANNER
+Gatekeeper_Mage
+Gatekeeper_MageEye
+Gatekeeper_Phyter
+Gatekeeper_Witch
+Groupe_Grunt
+Groupe_Rook
+Groupe_Shotgun
+Grunt
+Grunt_Captain
+Grunt_FlameRat
+Grunt_Guard
+Grunt_Guard_Offduty
+Grunt_LabRat
+Grunt_LabRat_Mechanic
+Grunt_Medic
+Grunt_Sapper
+Grunt_Shotgun
+Grunt_Sniper
+Interfector
+Krasue
+Larva
+Larva_Big
+Larva_Big_Hive
+Larva_BOSS
+Larva_Hive
+Leyak
+MageEye_Ally
+Peccary
+Peccary_Alpha
+Peccary_Armored
+Peccary_Electro
+Peccary_Mushroom
+Peccary_Snow
+Peccary_Volatile
+Pest
+Pest_Carbonated
+Pest_Electro
+Pest_Electro_Shield
+Pest_Enlightened
+Pest_Leyak
+Pest_Magma
+Pest_Rat
+Pest_Snow
+Pest_Volatile
+Pillager_Farmer
+Pillager_Musketeer
+Pillager_Musketeer_GUARD
+Pillager_Preacher
+Pillager_Preacher_Niketas
+Pillager_Torchbearer
+Pillager_Woodsman
+PlayerDecoyHologram
+PowerLeech
+PowerLeech_BOSS
+Reaper
+ReaperScout  -- These bug out, since we're ordering them to attack a bench, they keep hovering near it
+Robot_Containment
+Robot_Corrupt
+Robot_Defense
+Robot_Security
+Skink
+Skink_Crafted
+Skink_Magma
+Skink_Magma_Crafted
+Snowman
+Sow
+Symph
+Tarasque
+Thespian
+Trooper
+Trooper_Shield
+Trooper_Shotgun
+TutorialPest
+VOTV_Corpsewalker
+VOTV_Furfur
+VOTV_UFO
+VOTV_UFO_02
+VOTV_Wisp_Blue
+VOTV_Wisp_Green
+VOTV_Wisp_Red
+Waterbeast
+WinterSprite
+WinterSprite_Bomb
+WinterSprite_BOSS
+Yeti
+Zombie
+Zombie_Dam
+Zombie_Sci
