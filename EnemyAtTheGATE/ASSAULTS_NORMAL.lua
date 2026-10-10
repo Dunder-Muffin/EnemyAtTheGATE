@@ -228,7 +228,7 @@ local ASSAULTS = {
         {
             Name = "pestfrenzy_electro - END",
             StoryMin = 90, StoryMax = 999,
-            WarnMessage    = "The portal suppressor is going haywire...",
+            WarningMessage = "The portal suppressor is going haywire...",
             StartMessage   = "An inpestation!",
             Wave1     = { "Pest", "Pest", "Pest_Carbonated", "Pest_Rat", "Pest_Electro", "Pest_Electro",
                           "Pest_Volatile", "Pest_Magma", "Pest", "Pest_Magma", "Pest_Electro", "Peccary_Electro",
@@ -649,7 +649,7 @@ local ASSAULTS = {
             Wave1Time = 5,
             Wave2     = { "Grunt_LabRat", "Grunt_LabRat", "Grunt_Guard", "Grunt_Guard", 
                           "Grunt", "Grunt", "Grunt_Medic", "Grunt_Medic", 
-                          "Grunt_Captain", "Grunt_Captain", "Grunt_Breacher", "Grunt_Breacher", 
+                          "Grunt_Captain", "Grunt_Captain", "Grunt_Shotgun", "Grunt_Shotgun", 
                           "Groupe_Grunt", "Groupe_Grunt", "Groupe_Rook", "Groupe_Rook", 
                           "Groupe_Shotgun", "Groupe_Shotgun", "Grunt_Sapper", "Grunt_Sapper", 
                           "Trooper", "Trooper", "Trooper_Shield", "Trooper_Shield", 
@@ -1479,7 +1479,7 @@ local ASSAULTS = {
             BossWaveTime = 2,
             OnStart = EM.Sequence(
                 EM.AssaultWeather("Blackout", 60000, 15000),
-                EM.PowerLeechBossDrop(1000, { powerLeeches=1 })
+                EM.PowerLeechBossDrop(1000, { spawns = { powerLeeches=1 } })
             )
         },
         {
@@ -1500,7 +1500,7 @@ local ASSAULTS = {
             BossWaveTime = 15,
             OnStart = EM.Sequence(
                 EM.AssaultWeather("BlackFog", 20000, 21000),
-                EM.PowerLeechBossDrop(5000, { powerLeeches=1 })
+                EM.PowerLeechBossDrop(5000, { spawns = { powerLeeches=1 } })
             ),
         }
     },

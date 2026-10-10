@@ -882,8 +882,32 @@ function Utils.GetNativeAssaultName()
     return director, assaultRow
 end
 
+-- ============================================================
+-- AddActorTag - дописать FName-тег в AActor.Tags
+-- * Тот же приём, что в SetFNameArray: сначала растим массив
+--     элементом "None", потом через ForEach ставим нужное имя
+-- * Используется для тега "AnteVariant=<имя>": по нему AnteUp
+--     (ModuleGATE/GateBridge) узнаёт NPC из десанта GATE
+-- ============================================================
+function Utils.AddActorTag(actor, tag)
+    local tags = actor.Tags
+    tags[#tags + 1] = FName("None")
+    local last, i = #tags, 0
+    tags:ForEach(function(_, elem)
+        i = i + 1
+        if i == last then
+            -- FNAME_Add: такого имени в таблице FName ещё может не быть
+            local ok, fname = pcall(FName, tag, EFindName and EFindName.FNAME_Add)
+            elem:set(ok and fname or FName(tag))
+        end
+    end)
+end
+
 -- Spawn an NPC (async; see callback note below)
-function Utils.SpawnNpc(classPath, location, rotation, onSpawned)
+-- * beforeFinish(deferred) - необязательный колбэк, вызывается ДО
+--     FinishSpawningActor, то есть до BeginPlay. Нужен, чтобы повесить
+--     тег варианта раньше, чем хук AnteUp увидит NPC
+function Utils.SpawnNpc(classPath, location, rotation, onSpawned, beforeFinish)
     rotation  = rotation  or FRotator(0, math.random(0, 359), 0)
     onSpawned = onSpawned or function() end
 
@@ -926,6 +950,15 @@ function Utils.SpawnNpc(classPath, location, rotation, onSpawned)
             local deferred = gs:BeginDeferredActorSpawnFromClass(world, actorClass, transform, 2, nil, 0)
             if not deferred or IsNotValid(deferred) then onSpawned(nil); return end
 
+            -- Окно между созданием актора и его BeginPlay: сюда встаёт тег варианта.
+            -- Ошибка в колбэке не должна сорвать спавн, поэтому pcall.
+            if beforeFinish then
+                local okB, errB = pcall(beforeFinish, deferred)
+                if not okB then
+                    Utils.LogBad("[GATE] SpawnNpc beforeFinish error: " .. tostring(errB))
+                end
+            end
+
             local npc = gs:FinishSpawningActor(deferred, transform, 0)
             Utils.LogDebug("spawn<- " .. tostring(classPath), CONFIG.DEBUG_LOG)
             onSpawned(npc)
@@ -960,6 +993,8 @@ end
 --                   of that faction near the bench, so it opens on a rival
 --                   instead of the players.                 [nil = off]
 --   favoredRadius - search radius for that                  [2500 = 25m]
+--   tags          - список тегов, выровненный по classList: строка
+--                   вешается на NPC до BeginPlay, false = без тега   [nil]
 -- ============================================================
 function Utils.SpawnBenchNPCs(classList, delay, opts)
     opts = opts or {}
@@ -1049,6 +1084,13 @@ function Utils.SpawnBenchNPCs(classList, delay, opts)
                     return
                 end
 
+                -- Тег варианта для этого слота, если вызывающий его передал
+                local tag = opts.tags and opts.tags[i]
+                local beforeFinish = nil
+                if tag then
+                    beforeFinish = function(deferred) Utils.AddActorTag(deferred, tag) end
+                end
+
                 Utils.SpawnNpc(classPath, spawnLoc, nil, function(npc)
                     completed = completed + 1
 
@@ -1091,7 +1133,7 @@ function Utils.SpawnBenchNPCs(classList, delay, opts)
                     end
 
                     maybeStartPulse()
-                end)
+                end, beforeFinish)
             end
 
             if fxDelay > 0 then

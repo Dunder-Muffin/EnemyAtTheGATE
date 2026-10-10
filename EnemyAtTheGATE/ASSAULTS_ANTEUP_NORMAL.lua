@@ -78,7 +78,7 @@ local ASSAULTS = {
             Wave2Time = 10,
             Wave3     = { "Phase Peccary", "Phase Peccary" },
             Wave3Time = 1,
-            BossWave  = { "Razorgrav Pest" },
+            BossWave  = { "Anterazor Pest" },
             BossWaveTime = 15,
         },
     },
@@ -301,7 +301,7 @@ local ASSAULTS = {
             Wave1Time = 2,
             Wave2     = { "Groupe Frostpack" },
             Wave2Time = 15,
-            Wave3     = { "Groupe RamRook", "Groupe_Rook", "Groupe RamRook", "Groupe_Rook" },
+            Wave3     = { "Groupe Rookram", "Groupe_Rook", "Groupe Rookram", "Groupe_Rook" },
             Wave3Time = 5,
             BossWave  = { "Groupe Breacher", "Groupe Breacher" },
             BossWaveTime = 30,
@@ -796,7 +796,7 @@ local ASSAULTS = {
             BossWaveTime = 5,
             OnStart = EM.Sequence(
                 EM.AssaultWeather("Blackout", 60000, 15000),
-                EM.PowerLeechBossDrop(3000, { powerLeeches=1 })
+                EM.PowerLeechBossDrop(3000, { spawns = { powerLeeches=1 } })
             ),
         },
     },

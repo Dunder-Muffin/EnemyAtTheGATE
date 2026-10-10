@@ -82,8 +82,13 @@ function GATE.GetAssaultTable()
         Utils.Chat("[GATE] invalid DIFFICULTY in CONFIG - use Normal / Hard / NormalCustom / HardCustom / Custom / AnteUpNormal")
     end
 
+    -- Нормализуем ДО слияния: MergeTables идёт по ipairs и не видит запись,
+    -- которую забыли обернуть в список
+    GATE.NormalizeTable(resultTable)
+
     if useCustomTable then
         local custom = GATE.LoadAssaultFile("ASSAULTS_CUSTOM.lua")
+        GATE.NormalizeTable(custom)
         Utils.MergeTables(resultTable, custom)
     end
 
@@ -110,7 +115,8 @@ function GATE.PickRandomAssault(assaultName)
     for i, entry in ipairs(entries) do
         local min = entry.StoryMin or 0
         local max = entry.StoryMax or 999
-        if sp >= min and sp <= max then
+        -- Записи с Pool (пул боссов) идут только через GATE.GetPoolEntries
+        if sp >= min and sp <= max and not entry.Pool then
             table.insert(pool, { data = entry, idx = i })
         end
     end
@@ -160,6 +166,60 @@ end
 --     local entries = t[assaultName]
 --     return entries and #entries or 0
 -- end
+
+
+-- ============================================================
+-- NormalizeTable - чинит запись, записанную без внешнего списка
+--
+--   assault_x = { Name = "...", Wave1 = {...} }      -- так было
+--   assault_x = { { Name = "...", Wave1 = {...} } }  -- так нужно
+--
+-- * Без обёртки #entries == 0, строка считается "нашей", но без записей,
+--     и её штурм всегда перетягивается. Так было с assault_peststorm_electro
+-- ============================================================
+
+function GATE.NormalizeTable(t)
+    for row, entries in pairs(t or {}) do
+        if type(entries) == "table" and entries.Name ~= nil and entries[1] == nil then
+            local copy = {}
+            for k, v in pairs(entries) do copy[k] = v end
+            for k in pairs(copy) do entries[k] = nil end
+            entries[1] = copy
+            Log("[GATE] NormalizeTable - " .. tostring(row) .. ": single entry wrapped into a list")
+        end
+    end
+end
+
+
+-- ============================================================
+-- GetPoolEntries - все записи пула (Pool = "boss"), подходящие по этапу
+--
+-- * Строка, под которой лежит запись, для пула роли не играет: штурм
+--     идёт в строке, которую выбрала игра. Строка нужна только для
+--     истории повторов и отладочных команд
+-- * Возвращает { { row, idx, data }, ... }
+-- ============================================================
+
+function GATE.GetPoolEntries(poolName)
+    local t  = GATE.GetAssaultTable()
+    local sp = STATE.StoryProgress
+    local out = {}
+    for row, entries in pairs(t) do
+        for i, entry in ipairs(entries) do
+            local min = entry.StoryMin or 0
+            local max = entry.StoryMax or 999
+            if entry.Pool == poolName and sp >= min and sp <= max then
+                out[#out + 1] = { row = row, idx = i, data = entry }
+            end
+        end
+    end
+    -- pairs() не задаёт порядок; сортируем, чтобы выбор зависел только от random
+    table.sort(out, function(a, b)
+        if a.row ~= b.row then return a.row < b.row end
+        return a.idx < b.idx
+    end)
+    return out
+end
 
 
 -- ============================================================

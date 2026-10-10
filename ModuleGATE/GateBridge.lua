@@ -2,6 +2,8 @@
 -- GateBridge (AUTHORITY ONLY) - lets EnemyAtTheGATE put ANTEVARIANTS in its
 -- assault wave lists, and gives ModuleRevenge the same slot-mutation service.
 -- Full decode (channels, cursor matching, pin/warm, threading): AnNotes/Modules/GateBridge.md
+-- + DROP TAG: NPC из десанта GATE (EM.VariantDrop) несёт тег "AnteVariant=<имя>" и
+--   превращается в вариант по нему, без плана волн. См. readDropTag и шаг (A) в Register.
 -- =======================================================================
 
 ---@diagnostic disable: undefined-field, undefined-global
@@ -43,6 +45,11 @@ local PHASE_WAVE = { [2] = 1, [3] = 2, [4] = 3, [5] = 4 }
 
 -- Re-read cadence for the FILE fallback only (the shared-var read is free).
 local FILE_POLL_TICKS = 10      -- FAST_TICK is ~10/s, so ~1s
+
+-- DROP TAG - NPC из десанта GATE (EM.VariantDrop) приходит с тегом "AnteVariant=<имя>"
+-- в AActor.Tags. GATE вешает его до FinishSpawningActor, поэтому к BeginPlay он уже стоит.
+-- Волны директора идут по плану (канал 2), десанты - по тегу: у десанта нет слота в волне.
+local DROP_TAG_PREFIX = "AnteVariant="
 
 -- ---------------------------------------------------------------- state
 local planRaw = nil             -- last raw plan string we parsed
@@ -355,6 +362,29 @@ end
 
 
 -- =======================================================================
+-- Drop tag - имя варианта из тега "AnteVariant=<имя>", или nil.
+--   * Обычный NPC тегов не несёт, так что для него это один пустой ForEach
+--   * pcall: Tags читается на каждом BeginPlay, и сбой здесь не должен
+--     задеть путь волн ниже
+-- =======================================================================
+local function readDropTag(actor)
+    local found = nil
+    pcall(function()
+        local tags = actor.Tags
+        if not tags or (tags:GetArrayNum() or 0) == 0 then return end
+        tags:ForEach(function(_, elem)
+            if found then return end
+            local s = elem:get():ToString()
+            if s:sub(1, #DROP_TAG_PREFIX) == DROP_TAG_PREFIX then
+                found = s:sub(#DROP_TAG_PREFIX + 1)
+            end
+        end)
+    end)
+    return found
+end
+
+
+-- =======================================================================
 -- Asset warm - a wave's variants, once, as the wave starts. Cheap once the plan's assets are
 -- pinned; stays for ASSET_KEEPER off and for non-path def entries the pin skipped.
 -- =======================================================================
@@ -388,6 +418,33 @@ function GB.Register()
     local hook = "/Game/Blueprints/Characters/NPCs/NPC_Base_ParentBP.NPC_Base_ParentBP_C:ReceiveBeginPlay"
     local ok, err = pcall(RegisterHook, hook, function(self)
         if not STATE.ModEnabled then return end
+
+        -- (A) Десант GATE с тегом варианта. Плана и фазы не нужно: тег сам
+        --     говорит, кем стать. Слоты волн не трогаем - у десанта их нет.
+        if forGate then
+            local dropActor = self:get()
+            if not Utils.IsActorInvalid(dropActor) then
+                local dropVariant = readDropTag(dropActor)
+                if dropVariant then
+                    local rowName = Utils.GetActorRowName(dropActor)
+                    if rowName and slotUsable(dropVariant, rowName) then
+                        LogDebug(string.format("[GATE-BRIDGE] drop tag: %s -> %s", rowName, dropVariant),
+                            SETTINGS.DEBUG_NPC_ACTIONS)
+                        SpawnerHooks.WarmVariantNames({ dropVariant })
+                        -- Та же отложенная мутация, что у волн: десант тоже приходит пачкой
+                        Utils.QueueWork(function()
+                            if not STATE.ModEnabled then return end
+                            if Utils.IsActorInvalid(dropActor) then return end
+                            NPCM.MutateActor(dropVariant, dropActor, { Stagger = true })
+                        end, math.random(300, 900))
+                    else
+                        LogBad(string.format("[GATE-BRIDGE] drop tag '%s' does not fit %s - left vanilla",
+                            tostring(dropVariant), tostring(rowName)))
+                    end
+                    return
+                end
+            end
+        end
 
         local p = currentPlan()
         if not p then return end

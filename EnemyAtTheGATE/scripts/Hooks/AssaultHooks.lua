@@ -112,8 +112,13 @@ function HOOKS.Register()
         local all = GATE.GetAllCustomAssaults()
         local sp  = STATE.StoryProgress
         local pool = {}
+        -- Пул боссов бросается отдельно, как в обычном режиме
+        local boss = AM.TryBossAssault()
+        if boss then return boss end
+
         for _, entry in ipairs(all) do
-            if not excludeSet[entry.row] then
+            -- записи с Pool в обычный выбор не попадают
+            if not excludeSet[entry.row] and not entry.data.Pool then
                 local min = entry.data.StoryMin or 0
                 local max = entry.data.StoryMax or 999
                 if sp >= min and sp <= max then

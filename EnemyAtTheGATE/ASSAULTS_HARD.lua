@@ -190,7 +190,7 @@ local ASSAULTS = {
         },
         {
             Name = "pestfrenzy_electro - LATE VOLATILE",
-            StoryMin = 80, StoryMax = 100,
+            StoryMin = 80, StoryMax = 101,
             StartMessage = "A Pestilence!",
             Wave1     = { "Exor_Volatile", "Exor_Volatile",  },
             Wave1Time = 15,
@@ -215,7 +215,7 @@ local ASSAULTS = {
         },
         {
             Name = "pestfrenzy_electro - LATE MAGMA",
-            StoryMin = 80, StoryMax = 100,
+            StoryMin = 80, StoryMax = 101,
             WarningMessage = "You feel a slight temperature change...",
             StartMessage   = "Thermal hypesthesia! Its hotter than you feel!",
             Wave1     = { "Pest_Magma", "Pest_Magma", "Peccary_Volatile", "Pest_Magma", "Pest_Magma", 
@@ -245,8 +245,8 @@ local ASSAULTS = {
         },
         {
             Name = "pestfrenzy_electro - END",
-            StoryMin = 90, StoryMax = 100,
-            WarnMessage    = "The portal suppressor is going haywire...",
+            StoryMin = 90, StoryMax = 101,
+            WarningMessage = "The portal suppressor is going haywire...",
             StartMessage   = "An inpestation!",
             Wave1     = { "Pest", "Pest", "Pest_Carbonated", "Pest_Rat", "Pest_Electro",
                           "Pest_Volatile", "Pest_Magma", "Pest", "Pest_Magma", "Pest_Electro",
@@ -284,7 +284,7 @@ local ASSAULTS = {
         {
             Name = "pestfrenzy_electro - POSTEND",
             StoryMin = 102, StoryMax = 999,
-            WarnMessage    = "The portal suppressor is going haywire...",
+            WarningMessage = "The portal suppressor is going haywire...",
             StartMessage   = "An inpestation!",
             Wave1     = { "Pest", "Pest", "Pest_Carbonated", "Pest_Rat", "Pest_Electro",
                           "Pest_Volatile", "Pest_Magma", "Pest_Enlightened", "Pest_Magma", "Pest_Electro",
@@ -493,7 +493,7 @@ local ASSAULTS = {
         },
         {
             Name = "monkdad - END",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage   = "The fog before the storm...",
             Wave1     = { "Exor_Pikeman", "Exor", "Exor_Pikeman", "Exor", "Exor_Pikeman", },
             Wave1Time = 2,
@@ -589,7 +589,7 @@ local ASSAULTS = {
         },
         {
             Name = "exorsquad - END",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage = "An exor legion!",
             Wave1     = { "Exor", "Exor_Volatile", "Exor",
                           "Sow", "Sow", "Sow",
@@ -727,7 +727,7 @@ local ASSAULTS = {
         },
         {
             Name       = "shotgunsquad - END LEECH",
-            StoryMin   = 80, StoryMax = 100,
+            StoryMin   = 80, StoryMax = 101,
             WarningMessage = "The lights flicker...",
             StartMessage = "Something materializes above!",
             Wave1     = { "Groupe_Rook", "Grunt_Shotgun", "Grunt_Shotgun", "Grunt_Shotgun", "Groupe_Rook", },
@@ -775,7 +775,7 @@ local ASSAULTS = {
         },
         {
             Name       = "groupe - LATE",
-            StoryMin   = 80, StoryMax = 100,
+            StoryMin   = 80, StoryMax = 101,
             StartMessage = "A groupe assault!",
             Wave1     = { "Groupe_Grunt", "Groupe_Grunt", "Groupe_Rook", "Groupe_Rook", 
                           "Groupe_Shotgun", "Groupe_Shotgun", "Grunt_Captain", },
@@ -798,7 +798,7 @@ local ASSAULTS = {
         },
         {
             Name       = "groupe - END Praetorium",
-            StoryMin   = 90, StoryMax = 100,
+            StoryMin   = 90, StoryMax = 101,
             StartMessage = "A response from the Praetorium",
             Wave1     = { "Grunt_Medic", "Grunt_Medic", "Grunt_Captain",
                           "Grunt_Sapper", "Grunt_Sapper", "Interfector", "Interfector", },
@@ -831,13 +831,13 @@ local ASSAULTS = {
         },
         {
             Name = "groupe - END Prae xReaper",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage = "An ancient nemesis...",
             Wave1     = { "Interfector", "Interfector", "Grunt_Sapper", "Grunt_FlameRat", },
             Wave1Time = 5,
             Wave2     = { "Grunt_LabRat", "Grunt_LabRat", "Grunt_Guard", "Grunt_Guard", 
                           "Grunt", "Grunt", "Grunt_Medic", "Grunt_Medic", 
-                          "Grunt_Captain", "Grunt_Captain", "Grunt_Breacher", "Grunt_Breacher", 
+                          "Grunt_Captain", "Grunt_Captain", "Grunt_Shotgun", "Grunt_Shotgun", 
                           "Groupe_Grunt", "Groupe_Grunt", "Groupe_Rook", "Groupe_Rook", 
                           "Groupe_Shotgun", "Groupe_Shotgun", "Grunt_Sapper", "Grunt_Sapper", 
                           "Trooper", "Trooper", "Trooper_Shield", "Trooper_Shield", 
@@ -963,7 +963,7 @@ local ASSAULTS = {
         },
         {
             Name = "ratpatrol - END",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage   = "No one expects the Ordo Inquisition!",
             Wave1     = { "Grunt_Sapper", "Grunt_LabRat", "Grunt_LabRat_Mechanic", 
                           "Grunt_Sapper", "Grunt_LabRat", "Grunt_LabRat_Mechanic", },
@@ -1045,7 +1045,7 @@ local ASSAULTS = {
         },
         {
             Name = "mages - END",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage = "Something arcane overwhelms your senses...",
             Wave1     = { "Gatekeeper_Witch", "Gatekeeper_Mage", "Gatekeeper_Witch" },
             Wave1Time = 2,
@@ -1113,7 +1113,7 @@ local ASSAULTS = {
         },
         {
             Name = "gkheavy - END",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             Wave1     = { "Gatekeeper_Heavy", "Gatekeeper_Phyter", "Gatekeeper_Chieftain", },
             Wave1Time = 2,
             Wave2     = { "Gatekeeper_Heavy" },
@@ -1125,7 +1125,7 @@ local ASSAULTS = {
         },
         {
             Name = "gkheavy - END xORDER",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             WarningMessage = "You hear gunfire in the distance...",
             StartMessage = "A confrontation!",
             Wave1     = { "Gatekeeper_Heavy", "Gatekeeper_Heavy", "Gatekeeper_Chieftain",
@@ -1183,7 +1183,7 @@ local ASSAULTS = {
         },
         {
             Name = "gksquad - END xA2",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage = "Containment breach!",
             Wave1     = { "Exor_Monk", "Pest", "Pest", "Pest_Snow", "Pest_Volatile", 
                           "Exor", "Peccary_Mushroom", "Peccary_Snow", "Peccary_Snow", "Peccary_Volatile", 
@@ -1205,7 +1205,7 @@ local ASSAULTS = {
         },
         {
             Name = "gksquad - END BOSS",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage = "Defenders of the Dark Lens!",
             Wave1     = { "Gatekeeper_Phyter", "Gatekeeper_Phyter", "Gatekeeper_Phyter", "Gatekeeper_Chieftain", },
             Wave1Time = 2,
@@ -1285,7 +1285,7 @@ local ASSAULTS = {
         },
         {
             Name = "witchhunt - END",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage = "Witches and warlocks!",
             Wave1     = { "Gatekeeper_Chieftain" },
             Wave1Time = 20,
@@ -1303,7 +1303,7 @@ local ASSAULTS = {
         },
         {
             Name = "witchhunt - LATE xA2",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage = "A battle in the sky!",
             Wave1     = { "Exor_Volatile", "Exor_Volatile", "Exor_Volatile", "Exor_Volatile", "Exor_Volatile"},
             Wave1Time = 2,
@@ -1418,7 +1418,7 @@ local ASSAULTS = {
         },
         {
             Name = "pistolbros - ROBOT END xORDER",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             WarningMessage = "Explosions echo in the distance...",
             StartMessage   = "The sounds get closer!",
             StartSound = "/Game/Audio/Music/ShortStings/anteverse_sting.anteverse_sting",
@@ -1434,7 +1434,7 @@ local ASSAULTS = {
         },
         {
             Name = "pistolbros - ROBOT END",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             WarningMessage = "Explosions echo in the distance...",
             StartMessage   = "A robotic uprising!",
             StartSound = "/Game/Audio/Music/ShortStings/anteverse_sting.anteverse_sting",
@@ -1497,7 +1497,7 @@ local ASSAULTS = {
         },
         {
             Name = "corruptbot - LATE xGIANT",
-            StoryMin = 80, StoryMax = 100,
+            StoryMin = 80, StoryMax = 101,
             StartMessage = "Massive entities are on the loose!",
             Wave1     = { "Robot_Containment", "Robot_Containment", "Robot_Containment", "Robot_Containment",  },
             Wave1Time = 5,
@@ -1513,7 +1513,7 @@ local ASSAULTS = {
         },
         {
             Name = "corruptbot - END SIEGE",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage = "Corruption and fire!",
             Wave1     = { "Robot_Defense", "Robot_Defense", },
             Wave1Time = 10,
@@ -1633,7 +1633,7 @@ local ASSAULTS = {
         },
         {
             Name = "soldierpatrol - SYMPH END xORDER",
-            StoryMin = 80, StoryMax = 100,
+            StoryMin = 80, StoryMax = 101,
             StartMessage   = "A commotion in the fog... ",
             Wave1     = { "Grunt_Shotgun", "Grunt_Shotgun", "Grunt_Shotgun", "Grunt_Shotgun",
                           "Grunt", "Grunt_Guard", "Grunt", "Grunt_Guard",
@@ -1657,7 +1657,7 @@ local ASSAULTS = {
         },
         {
             Name = "soldierpatrol - SYMPH END xGKs",
-            StoryMin = 80, StoryMax = 100,
+            StoryMin = 80, StoryMax = 101,
             StartMessage   = "A commotion in the fog... ",
             Wave1     = { "Gatekeeper_Phyter", "Gatekeeper_Phyter", "Gatekeeper_Phyter",                          
                           "Gatekeeper_Phyter", "Gatekeeper_Phyter", "Gatekeeper_Phyter", },
@@ -1770,7 +1770,7 @@ local ASSAULTS = {
         },
         {
             Name = "larva - LATE GIANTS",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage   = "Horrors from beyond!",
             Wave1     = { "Larva", "Larva_Hive", "Larva_Big_Hive", "Larva_Big", "Larva_Big_Hive", 
                           "Larva", "Larva_Hive", "Larva_Big_Hive", "Larva_Big", "Larva_Big_Hive", },
@@ -1864,7 +1864,7 @@ local ASSAULTS = {
         },
         {
             Name = "zombiehorde - END REAPER",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             StartMessage = "Don't fear the reaper...",
             Wave1     = { "Reaper", "Reaper", },
             Wave1Time = 2,
@@ -1931,7 +1931,7 @@ local ASSAULTS = {
             Wave1Time = 5,
             Wave2     = { "Grunt_LabRat", "Grunt_LabRat", "Grunt_Guard", "Grunt_Guard", 
                           "Grunt", "Grunt", "Grunt_Medic", "Grunt_Medic", 
-                          "Grunt_Captain", "Grunt_Captain", "Grunt_Breacher", "Grunt_Breacher", 
+                          "Grunt_Captain", "Grunt_Captain", "Grunt_Shotgun", "Grunt_Shotgun", 
                           "Groupe_Grunt", "Groupe_Grunt", "Groupe_Rook", "Groupe_Rook", 
                           "Groupe_Shotgun", "Groupe_Shotgun", "Grunt_Sapper", "Grunt_Sapper", 
                           "Trooper", "Trooper", "Trooper_Shield", "Trooper_Shield", 
@@ -1998,7 +1998,7 @@ local ASSAULTS = {
         },
         {
             Name = "salemmob - END xGKs",
-            StoryMin = 80, StoryMax = 100,
+            StoryMin = 80, StoryMax = 101,
             StartMessage = "A witch hunt!",
             Wave1     = { "Gatekeeper_Witch", "Gatekeeper_Witch", "Gatekeeper_Witch", },
             Wave1Time = 2,
@@ -2109,12 +2109,12 @@ local ASSAULTS = {
             BossWaveTime = 2,
             OnStart = EM.Sequence(
                 EM.AssaultWeather("Blackout", 60000, 15000),
-                EM.PowerLeechBossDrop(1000, { powerLeeches=1 })
+                EM.PowerLeechBossDrop(1000, { spawns = { powerLeeches=1 } })
             )
         },
         {
             Name = "assassin - END",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             WarningMessage   = "A stillness fills the air...",
             StartMessage = "An unseen war rages!",
             Wave1     = { "Assassin", "Assassin", "Assassin", "Assassin", "Assassin",
@@ -2130,7 +2130,7 @@ local ASSAULTS = {
             BossWaveTime = 7,
             OnStart = EM.Sequence(
                 EM.AssaultWeather("BlackFog", 20000, 21000),
-                EM.PowerLeechBossDrop(5000, { powerLeeches=1 }),
+                EM.PowerLeechBossDrop(5000, { spawns = { powerLeeches=1 } }),
                 EM.OrderDrop(5000, { spawns = { interfectors=1 }, dilationStart = 1, spawnRadius=3000, minSpawnRadius=1500 }),
                 EM.CrystalliskDrop(5000, { spawns = { crystallisks=1 }}),
                 EM.OrderDrop(10000, { spawns = { interfectors=2 }, dilationStart = 1, spawnRadius=3000, minSpawnRadius=1500 }),
@@ -2159,7 +2159,7 @@ local ASSAULTS = {
             BossWaveTime = 7,
             OnStart = EM.Sequence(
                 EM.AssaultWeather("BlackFog", 60000, 21000),
-                EM.PowerLeechBossDrop(5000, { powerLeeches=2 }),
+                EM.PowerLeechBossDrop(5000, { spawns = { powerLeeches=2 } }),
                 EM.OrderDrop(5000, { spawns = { interfectors=2 }, dilationStart = 1, spawnRadius=3000, minSpawnRadius=1500 }),
                 EM.CrystalliskDrop(5000, { spawns = { crystallisks=3 }}),
                 EM.OrderDrop(10000, { spawns = { interfectors=2 }, dilationStart = 1, spawnRadius=3000, minSpawnRadius=1500 }),
@@ -2208,7 +2208,7 @@ local ASSAULTS = {
         },
         {
             Name = "lamogifrenzy - END",
-            StoryMin = 90, StoryMax = 100,
+            StoryMin = 90, StoryMax = 101,
             WarningMessage = "A cold front from the north...",
             StartMessage = "Snowmageddon!",
             Wave1     = { "Pest_Snow", "Pest_Snow", "Pest_Snow", "Pest_Snow", "Peccary_Snow",

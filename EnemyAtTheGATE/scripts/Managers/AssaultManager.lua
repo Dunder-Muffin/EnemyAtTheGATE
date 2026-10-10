@@ -12,6 +12,8 @@ local CONFIG = STATE.Config
 local Utils  = require("Utils.Utils")
 local GATE   = require("Managers.GATEManager")
 local AB     = require("Managers.AnteBridge")
+local Variety = require("Managers.Variety")
+local AFUtils = require("AFUtils.AFUtils")
 
 local Log      = Utils.Log
 local LogDebug = Utils.LogDebug
@@ -35,6 +37,16 @@ function AM.SetCustomAssault(director, directorAssaultData)
     
     local initAssaultName = Utils.FNameToString(director.Assault_CurrentRow)
     if not initAssaultName or initAssaultName == "None" then return end
+
+    -- [ПУЛ БОССОВ] Бросок до обычного выбора. Строку игры не меняем:
+    -- она только оболочка, волны и сообщения запишет запись босса.
+    local boss = AM.TryBossAssault()
+    if boss then
+        LogDebug("[GATE] SetCustomAssault() - BOSS " .. AM.MakeAssaultKey(boss.row, boss.idx) ..
+            " in the shell of " .. initAssaultName, CONFIG.DEBUG_LOG)
+        AM.SCM_ApplyAssaultData(director, directorAssaultData, boss.data, boss.row, boss.idx)
+        return
+    end
 
     local MAX_REDRAWS = 15
     local chosenRow, chosenAssaultData, chosenIdx
@@ -105,6 +117,16 @@ end
 -- ============================================================
 
 function AM.SCM_ApplyAssaultData(director, assDirector, data, assaultRow, entryIdx)
+
+    -- Копия записи на этот штурм: примешивание вариантов и модификатор
+    -- (Managers/Variety.lua). Ошибка там не должна стоить штурма -
+    -- тогда идёт запись как есть.
+    local okV, prepared = pcall(Variety.Prepare, data)
+    if okV and type(prepared) == "table" then
+        data = prepared
+    else
+        Utils.LogBad("[GATE] SCM_ApplyAssaultData() - Variety failed, using the entry as is: " .. tostring(prepared))
+    end
     
     -- Pending assault. We'll save it to RecentAssaults when it happens
     STATE.RecentAssaults_Pending = { row = assaultRow, idx = entryIdx }
@@ -301,6 +323,66 @@ function AM.OnAssaultTick(director)
     end 
 end
 
+
+
+
+-- ============================================================
+-- TryBossAssault - бросок на пул боссов (CONFIG.BOSS_ASSAULTS)
+--
+-- * Работает с этапа StoryMin (по умолчанию 102, после финала)
+-- * Шанс Chance на КАЖДЫЙ штурм, независимо от того, какую строку
+--     выбрала игра и сколько в ней записей
+-- * Недавние записи пула пропускаются; если свежих нет, берётся любая
+-- * Возвращает { row, idx, data } или nil
+-- ============================================================
+function AM.TryBossAssault()
+    local cfg = CONFIG.BOSS_ASSAULTS
+    if not cfg or not cfg.Enabled then return nil end
+    if (STATE.StoryProgress or 0) < (cfg.StoryMin or 102) then return nil end
+
+    -- Один бросок на игровой день. Директор иногда пересобирает штурм, и
+    -- SortAssaultSpawnLists вызывается повторно; без этого кэша каждый
+    -- повтор бросал бы кубик заново и шанс был бы выше Chance.
+    -- В Endless (ASSAULTS_PER_WEEK = 8) штурмов в день несколько - там без кэша.
+    local day = nil
+    pcall(function()
+        local dnm = AFUtils.GetDayNightManager()
+        if dnm and IsValid(dnm) then day = dnm.CurrentDay end
+    end)
+
+    local hit
+    if day and (CONFIG.ASSAULTS_PER_WEEK or 1) < 8 then
+        if STATE.BossRoll and STATE.BossRoll.day == day then
+            hit = STATE.BossRoll.hit
+        else
+            hit = math.random() < (cfg.Chance or 0)
+            STATE.BossRoll = { day = day, hit = hit }
+        end
+    else
+        hit = math.random() < (cfg.Chance or 0)
+    end
+    if not hit then return nil end
+
+    local pool = GATE.GetPoolEntries("boss")
+    if #pool == 0 then
+        LogDebug("[GATE] TryBossAssault() - roll hit, but the boss pool is empty at SP=" ..
+            tostring(STATE.StoryProgress), CONFIG.DEBUG_LOG)
+        return nil
+    end
+
+    local fresh = {}
+    for _, e in ipairs(pool) do
+        if not AM.IsRecentAssault(e.row, e.idx) then fresh[#fresh + 1] = e end
+    end
+    local src = (#fresh > 0) and fresh or pool
+    local chosen = src[math.random(1, #src)]
+
+    Log("[GATE] Boss assault: " .. tostring(chosen.data.Name or chosen.row))
+    if cfg.Announce then
+        Utils.DelayedGameThread(2000, function() Utils.Chat("[GATE] Boss assault incoming") end)
+    end
+    return chosen
+end
 
 
 

@@ -25,6 +25,7 @@ local Utils     = require("Utils.Utils")
 local STATE     = require("Data.STATE")
 local CONFIG    = STATE.Config
 local Enums     = require("Data.Enums")
+local AB        = require("Managers.AnteBridge")
 
 local EM = {}
 
@@ -608,13 +609,36 @@ end
 
 
 -- ============================================================
+-- giantOnSpawned - общая обработка гиганта после спавна
+-- * Снеговику нужен свой обработчик (HandleSnowman)
+-- * Остальные гиганты 3 секунды идут замедленно, потом атакуют верстак
+-- * Используется в EM.GiantDrop и EM.VariantDrop
+-- ============================================================
+local function giantOnSpawned(npc, bench, loc)
+    if Utils.IsActorInvalid(npc) then return end
+    local npcName = Utils.GetActorName(npc)
+
+    if npcName == "Snowman" then
+        Utils.HandleSnowman(npc)
+    else
+        npc.CustomTimeDilation = 0.5
+        Utils.DelayedGameThread(3000, function()
+            if Utils.IsActorValid(npc) then npc.CustomTimeDilation = 1.0 end
+        end)
+        if Utils.IsActorAlive(npc) then
+            Utils.ForceAttackTarget(npc, bench)
+        end
+    end
+end
+
+
+-- ============================================================
 -- Spawn giant creatures near the assault bench.
 -- opts.spawns: tarasques, behemoths, yetis, bigfoots, bigogi, snowmen
 -- 
 -- Nav-agent is shrunk so they navigate the facility corridors.
 -- Snowman requires special BT patching (see Utils.HandleSnowman).
 -- ============================================================
-
 function EM.GiantDrop(delay, opts)
     delay = delay or 1000
     opts  = opts  or {}
@@ -646,28 +670,127 @@ function EM.GiantDrop(delay, opts)
             zClearance    = 200,
             spawnInterval = opts.spawnInterval  or 2500,
             isGiant       = true,
-            onSpawned = function(npc, bench, loc)
-
-                if Utils.IsActorInvalid(npc) then return end
-                local npcName = Utils.GetActorName(npc)
-
-                if npcName == "Snowman" then
-                    Utils.HandleSnowman(npc)
-                else
-                    npc.CustomTimeDilation = 0.5
-                    Utils.DelayedGameThread(3000, function()
-                        if Utils.IsActorValid(npc) then npc.CustomTimeDilation = 1.0 end
-                    end)
-                    if Utils.IsActorAlive(npc) then
-                        Utils.ForceAttackTarget(npc, bench)
-                    end
-                end
-            end,
+            onSpawned     = giantOnSpawned,
         })
         
         if CONFIG.DEBUG_LOG then
             Utils.Delay(PrepDelay(delay), function() 
                 LogDebug("[ASSAULT] " .. STATE.SECONDS_TICK .. " - GiantDrop starts", CONFIG.DEBUG_LOG)
+            end)
+        end
+    end
+end
+
+
+-- ============================================================
+-- VariantDrop - десант, в котором можно называть варианты AnteUp
+--
+-- Пример:
+--   EM.VariantDrop(10000, { spawns = { ["Tarasque Charger"] = 1, Exor_Monk = 2 } })
+--   EM.VariantDrop(10000, { units = { "Exor Superior", "Exor_Monk", "Velites Guard@Grunt_Guard" } })
+--
+-- * spawns - { имя = количество }, units - плоский список, имя повторяется
+--     столько раз, сколько тел нужно. Можно передать оба
+-- * Имя - вариант AnteUp, строка DT_NPCList или "Вариант@Строка" для выбора тела
+-- * Спавнится базовый NPC, на него до BeginPlay вешается тег
+--     "AnteVariant=<имя>", и AnteUp (ModuleGATE/GateBridge) превращает его в вариант
+-- * Без AnteUp тег не вешается и приходит обычный базовый NPC
+-- * Гиганты (Tarasque, Behemoth, Yeti, Bigfoot, Snowman, WinterSprite_BOSS)
+--     спавнятся по правилам GiantDrop: дальше от верстака и со сжатым nav-агентом
+-- * Поддерживает опции перекрёстного огня: favoredEnemy, favoredRadius,
+--     spawnAtWavePoint, wavePointScatter
+-- ============================================================
+
+-- Строки, которые спавнятся как гиганты
+local GIANT_ROWS = {
+    Tarasque = true, Behemoth = true, Yeti = true,
+    Bigfoot = true, Snowman = true, WinterSprite_BOSS = true,
+}
+
+function EM.VariantDrop(delay, opts)
+    delay = delay or 1000
+    opts  = opts  or {}
+
+    return function()
+        -- (1) Собираем плоский список имён. spawns сортируем, чтобы порядок
+        --     появления был одинаковым от запуска к запуску
+        local names = {}
+        for _, n in ipairs(opts.units or {}) do names[#names + 1] = tostring(n) end
+        if opts.spawns then
+            local keys = {}
+            for k in pairs(opts.spawns) do keys[#keys + 1] = k end
+            table.sort(keys)
+            for _, k in ipairs(keys) do
+                for _ = 1, (opts.spawns[k] or 0) do names[#names + 1] = k end
+            end
+        end
+        if #names == 0 then return end
+
+        -- (2) Имя -> класс базового NPC + тег варианта.
+        --     Тег ставим только при живом AnteUp: на кэшированной карте
+        --     превращать некому, и это обычный базовый NPC
+        local map  = AB.GetVariantMap() or {}
+        local live = AB.IsAnteUpLive()
+
+        local small, smallTags, giants, giantTags = {}, {}, {}, {}
+        for _, raw in ipairs(names) do
+            local name, body = string.match(raw, "^(.-)@(.+)$")
+            name = name or raw
+            local base    = body or map[name] or name
+            local variant = (map[name] and live) and name or false
+            local class   = Enums.NpcClasses[base]
+
+            if not class then
+                Utils.LogBad("[GATE] EM.VariantDrop() - no NPC class for '" .. raw .. "' (base " .. tostring(base) .. ")")
+            elseif GIANT_ROWS[base] then
+                giants[#giants + 1]       = class
+                giantTags[#giantTags + 1] = variant and ("AnteVariant=" .. variant) or false
+            else
+                small[#small + 1]         = class
+                smallTags[#smallTags + 1] = variant and ("AnteVariant=" .. variant) or false
+            end
+        end
+
+        local favoredEnemy  = opts.favoredEnemy  or opts.FavoredEnemy
+        local favoredRadius = opts.favoredRadius or opts.FavoredRadius
+        local interval      = opts.spawnInterval
+
+        -- (3) Обычные NPC - кольцо вокруг верстака, как у фракционных десантов
+        if #small > 0 then
+            Utils.SpawnBenchNPCs(small, PrepDelay(delay), {
+                favoredEnemy  = favoredEnemy,
+                favoredRadius = favoredRadius,
+                pointFinder   = wavePointFinder(opts),
+                radius        = opts.spawnRadius    or 2500,
+                minRadius     = opts.minSpawnRadius or 1200,
+                spawnInterval = interval or 800,
+                dilationStart = opts.dilationStart,
+                dilationDelay = opts.dilationDelay,
+                tags          = smallTags,
+            })
+        end
+
+        -- (4) Гиганты - как в GiantDrop
+        if #giants > 0 then
+            Utils.SpawnBenchNPCs(giants, PrepDelay(delay), {
+                favoredEnemy  = favoredEnemy,
+                favoredRadius = favoredRadius,
+                pointFinder   = wavePointFinder(opts),
+                radius        = opts.spawnRadius    or 4000,
+                minRadius     = opts.minSpawnRadius or 2000,
+                maxZDelta     = 200,
+                zClearance    = 200,
+                spawnInterval = interval or 2500,
+                isGiant       = true,
+                onSpawned     = giantOnSpawned,
+                tags          = giantTags,
+            })
+        end
+
+        if CONFIG.DEBUG_LOG then
+            Utils.Delay(PrepDelay(delay), function()
+                LogDebug(string.format("[ASSAULT] %d - VariantDrop starts (%d + %d giants)",
+                    STATE.SECONDS_TICK, #small, #giants), CONFIG.DEBUG_LOG)
             end)
         end
     end
