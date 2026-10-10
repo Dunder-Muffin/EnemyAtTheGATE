@@ -1,0 +1,251 @@
+-- =======================================================================
+-- ITEMS  (moved out of AnteData/Enums.lua)
+--
+-- A dropped item is the DropClass actor; its ItemDataRow says what it actually is.
+-- So a category = one datatable path (BASE) + that table's row names.
+--   * Spawn side: AnteCore/ItemSpawner.lua `DropItem(category.BASE, category.ROW, ...)`.
+--   * Pure data, requires nothing - safe to require anywhere, no cycles.
+--   * Usual shortcut: `local G = require("AnteData.Items").Global`.
+-- =======================================================================
+
+local Items = {
+
+    -- The dropped-item actor class - parent for every drop
+    DropClass = "/Game/Blueprints/Items/Abiotic_Item_Dropped.Abiotic_Item_Dropped_C",
+
+    -- ONE table: ItemTable_Global is a SUPERSET, every item row resolves there.
+    --   * So every drop we make uses Global.BASE plus a row below.
+    --   * Formerly split across Pickups / Food / Deployed / Craftables - now consolidated.
+    Global = {
+        BASE = "/Game/Blueprints/Items/ItemTable_Global.ItemTable_Global",
+
+        FRAG_GRENADE = "frag",
+        CLUSTER_GRENADE = "clustergrenade",
+        -- Thrown as a PROJECTILE, not dropped: a ThrownWeapon builds its client-visible mesh from
+        -- this row's WorldStaticMesh (Storm Witch shock pulse grenade).
+        NULL_GRENADE = "nullgrenade",
+        LASER_EMITTER = "laser_emitter",
+        PIPE_HYDRO = "pipe_hydro",
+
+        -- The Woodsman's felling axe (its own native drop). Thrown by the Canaan Lumberjack,
+        -- which needs the ITEM ROW - a thrown weapon builds its client-visible mesh from it.
+        WOOD_AXE = "woodaxe",
+
+        ROCKET_LAUNCHER = "rocketlauncher",
+        AMMO_ROCKET_PEN = "ammo_rocket_penetrator",
+        AMMO_ROCKET_CLUSTER = "ammo_rocket_cluster",
+
+        -- NPC scrap / materials / misc
+        HONEY = "honey",
+        WAX = "wax",
+        GEL = "gel",
+        POWERCELL = "powercell",
+        SCRAP_BIO = "scrap_bio",
+        SCRAP_TECH = "scrap_tech",
+        SCRAP_GLASS = "scrap_glass",
+        POWDERED_CRYSTAL = "powderedcrystal",
+        CAPACITOR = "capacitor",
+        GEM = "gem",
+        LENS = "lens",
+        PROJECTION_MATRIX = "projectionmatrix",
+        ORGAN = "organ",
+        SCRAP_COMPOSER           = "scrap_composer",
+        BANDAGE_T2               = "bandage_t2",
+        SCRAP_LEATHER            = "scrap_leather",
+        SCRAP_SILVER             = "scrap_silver",
+        SOIL                     = "soilbag",
+        SOLDER                   = "solder",
+        SCRAP_KEVLAR             = "scrap_kevlar",
+        MAGNETIC_ALLOY           = "magalloy",
+        CARBON_PLATING           = "carbonplating",
+        CARBON                   = "refinedcarbon",
+        MILITARY_ELEC            = "scrap_military",
+        GIB_EXORHEART            = "gib_exorheart",
+        STAPLER                  = "stapler",
+        CARAPACE                 = "carapace",
+        REBAR                    = "rebar",
+        CHAINS                   = "chains",
+        RES_GROWTH               = "growth",
+        MEMORY_BRICK             = "brick_memory",
+        ESSENCE_LEYAK            = "essence_leyak",
+        ESSENCE_REAPER           = "essence_reaper",
+        CPU_JAILBROKEN           = "cpu_purple",
+        CPU_REINFORCED           = "cpu_gold",
+        CPU_CORRUPT              = "cpu_red",
+        SENSOR                   = "sensor",
+        ICHOR                    = "ichor",
+        HEXWOOD                  = "hexwood",
+        APPLE                    = "food_apple",
+        CORRUPTED_CORN           = "food_corn_infected",
+        POPCORN_COOKED           = "food_popcorn_buttery",
+        LODESTONE_FRAGMENT       = "lodestone_fragment",
+        CLOTH_ROPE               = "ClothRope",
+        TRANSFORMER_BUSHING      = "transformer_bushing",
+        COIL_WINDING             = "coil_v2",
+        THROWING_CRYSTAL = "throwing_crystal",
+        LIQUID_CRYSTAL = "liquidcrystal",
+        DIODE = "diode",
+        QUANTUM_GLASS = "quantumglass",
+        ANOMALY = "anomaly",
+        HEALING_SYRINGE = "syringe",
+        ACID_SYRINGE = "syringe_acid",
+        EXOR_ARM = "gib_exor_arm",
+        SCRAP_ARCANE = "scrap_arcane",
+        MAGE_EYE = "mage_eye",
+        MAGE_SKULL = "gib_mage_skull",
+        PLUTONIC_CARAPACE = "carapace_plutonic",
+        PLUTONIC_BLOOD = "blood_plutonic",
+        TRANSURANIC =  "238",
+
+        COOKING_POT = "cookingpot",
+        FRYING_PAN = "fryingpan",
+        SALT = "salt",
+        BIO_SCRAP = "scrap_bio",
+        CLOTH_SCRAP = "scrap_cloth",
+        WOOD_SCRAP = "scrap_wood",
+        PLASTIC_SCRAP = "scrap_plastic",
+        METAL_SCRAP = "scrap_metal",
+        TACTICAL_SCRAP = "scrap_order",
+        MONEY = "money",
+        MONEY_STACK = "money_stack",
+        QUILL = "exorquill",
+        THROWING_SHARD = "throwing_shard",
+        PENS = "pens",
+        RUBBERBANDS = "rubberbands",
+        DUCTTAPE = "ducttape",
+        CIRCUITBOARD = "circuitboard",
+        KEYBOARD = "keyboard",
+        PHONE = "phone",
+        REINFORCED_HOSE = "hose_reinforced",
+        ENERGY_BRICK = "brick_power",
+        COIL         = "coil",
+        POWER_SUPPLY = "powersupply",
+        MAGAZINES = "magazines",
+        PRESSURE_GAUGE = "pressuregauge",
+        CPU_BRICK = "brick_cpu",
+        LAB_BURNER = "burner",
+        SCREWS = "screws",
+        CONTROLLER = "controller",
+        GUNPOWDER = "gunpowder",
+        AMMO_9MM = "ammo_9mm",
+        AMMO_556 = "ammo_556",
+        AMMO_12G = "ammo_12g",
+        AMMO_308 = "ammo_308",
+        AMMO_357 = "ammo_Magnum",
+        AMMO_ROCKET = "ammo_rocket",
+        AMMO_BOLT_LODE = "ammo_bolt_lodestone",
+        STEELCABLE = "steelcable",
+        PETN = "petn",
+        DETONATION_CORD = "detcord",
+        TRANSCENDIUM = "transcendium",
+        BLACK_GUNK = "scrap_gunk",
+        DIGITAL_ORE = "digital_ore",
+        DIGITAL_GOLD = "digital_gold",
+        NEUTRINO_MAPPER = "neutrinomapper",
+        YETI_FUR = "yetifur",
+        FROZEN_ESSENCE = "essence_frozen",
+        PURPORTED_GRIMOIRE = "grimoire",
+
+        -- Food / gibs
+        CARBUNCLE_CARCASS = "gib_carbuncle_carcass",
+        PEST_BODY = "gib_pest_body",
+        PEST_BODY_COOKED = "gib_pest_body_cooked",
+        PEST_TAIL = "gib_pest_tail",
+        PEST_TAIL_COOKED = "gib_pest_tail_cooked",
+        PECCARY_LEG = "gib_peccary_leg",
+        PECCARY_LEG_COOKED = "gib_peccary_leg_cooked",
+        PECCARY_CHOP = "gib_peccary_chop",
+        PECCARY_CHOP_COOKED = "food_peccary_chop_cooked",
+        PECCARY_ROAST_STUFFED = "food_roastpecc",
+        PECCARY_SAUSAGE = "food_peccary_sausages",
+        FILET_ANTEFISH_RAW = "filet_antefish_raw",
+        NACHOS = "food_nachos",
+        RAD_RICE_BOWL = "food_ricebowl",
+        MUSHROOM = "food_mushroom",
+        CARROT_CAKE_SLICE = "food_cake_carrot_slice",
+        ALIENWHEAT = "alienwheat",
+        MILK = "food_milk",
+        DOUGH = "food_bread_dough",
+        ICECREAM = "icecream",
+        SILK_TEMAKI = "food_temaki_silk",
+
+        -- Deployables
+        DISC_TURRET = "Deployable_DiscTurret",
+        MICROWAVE   = "votv_microwave",
+
+        SOUP_BOWL = "soupbowl",
+
+        -- Gear
+        ARMOR_HELMET_COMPOSER_U1 = "armor_helmet_composer_U1",
+        MYSTAGOUGE_WRAPS         = "armor_arms_mage",
+
+        -- Distillations
+        DISTILLATION_VIGOROUS = "distillation_vigorous",
+        DISTILLATION_CHARGED = "distillation_charged",
+        DISTILLATION_FLESHY = "distillation_fleshy",
+        DISTILLATION_FIZZY = "distillation_fizzy",
+        DISTILLATION_BOILING = "distillation_boiling",
+        DISTILLATION_ALIEN = "distillation_alien",
+        DISTILLATION_BRAINY = "distillation_brainy",
+        DISTILLATION_FOGGY = "distillation_foggy",
+        DISTILLATION_VOID = "distallation_void",
+        DISTILLATION_EXPANDING = "distillation_expanding",
+        DISTILLATION_MYCOLOGICAL = "distillation_mycological",
+        DISTILLATION_UNNERVING = "distillation_unnerving",
+        DISTILLATION_OCCULT = "distillation_occult",
+        DISTILLATION_UNSTABLE = "distillation_unstable",
+        DISTILLATION_ENDOTHERMIC = "distillation_endothermic",
+
+        -- Flasks
+        FLASK_BLIZZARD = "flask_blizzard",
+        FLASK_CHARGING = "flask_charging",
+        FLASK_CONCUSSIVE = "flask_concussive",
+        FLASK_CORROSIVE = "flask_corrosive",
+        FLASK_HOLY = "flask_holy",
+        FLASK_MEGATON = "flask_megaton",
+        FLASK_PANIC = "flask_panic",
+        FLASK_PHEROMONE = "flask_pheromone",
+        FLASK_PORTAL = "flask_portal",
+        FLASK_RESTORATIVE = "flask_restorative",
+        FLASK_UNSTABLE = "flask_unstable",
+        FLASK_UPDRAFT = "flask_updraft",
+
+        TINCTURE_ANTIHEAT = "tincture_antiheat",
+        TINCTURE_BRAINPOWER = "tincture_brainpower",
+        TINCTURE_BERSERKER = "tincture_berserker",
+        TINCTURE_CURATIVE = "tincture_curative",
+        TINCTURE_ELECTRIFYING = "tincture_electrifying",
+        TINCTURE_GIGANTO = "tincture_giganto",
+        TINCTURE_PHASING = "tincture_phasing",
+        TINCTURE_REINFORCING = "tincture_reinforcing",
+        TINCTURE_RESTORATIVE = "tincture_restorative",
+        TINCTURE_SPEEDY = "tincture_speedy",
+
+        COATING_ACID = "coating_acid",
+        COATING_BOUNCE = "coating_bounce",
+        COATING_DISRUPTOR = "coating_disruptor",
+        COATING_ELECTROMAG = "coating_electromagnetic",
+        COATING_FOGGY = "coating_foggy",
+        COATING_HOLY = "coating_holy",
+        COATING_QUANTUM = "coating_quantum",
+        COATING_REFORGING = "coating_reforging",
+        COATING_SOMNIVOROUS = "coating_somnivorous",
+        COATING_THERMAL = "coating_thermal",
+
+        -- Keys
+        KEY_SECURITY = "key_security",
+        KEY_ORNATE = "key_ornate",
+        KEY_PORCELAIN = "key_porcelain",
+        KEY_GK = "key_gatekeeper",
+
+        -- Gear
+        BACKPACK_RADIO = "backpack_radio",
+
+        -- Trinkets
+        TRINKET_NIGHTPASS = "trinket_nightpass",
+        TRINKET_SIGIL = "trinket_order",
+        TRINKET_FOG = "trinket_foglantern",
+    },
+}
+
+return Items
